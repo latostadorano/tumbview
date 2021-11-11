@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>tumbview_01</title>
+    <script src="libraries/p5.js" type="text/javascript"></script>
+
+    <script src="libraries/p5.dom.js" type="text/javascript"></script>
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <script src="sketch.js" type="text/javascript"></script>
+
+    <style> body {padding: 0; margin: 0;} canvas {vertical-align: top;} </style>
+  </head>
+  <body>
+    <div style="padding:20px;">
+      <p>Crea un slideshow ingresando el nombre de un Tumblr y los segundos en que la imagen durará en pantalla.</p>
+      <p>
+      <input id="question" placeholder="Tumblr blog name" />
+      <button id="submit">Play</button>  </p>
+      <p>
+        <input id="time" placeholder="Segundos" />
+        <button id="submitTime">Change</button>  </p>
+      <br>
+      <img id="foto" src="https://placekitten.com/600/400" style="visibility:hidden">
+
+    </div>
+
+  </body>
+</html>
