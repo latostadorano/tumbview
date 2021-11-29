@@ -1,25 +1,26 @@
 var api_1 = "https://api.tumblr.com/v2/blog/";
 blog = "toust";
 //blog = "web1995";
-var api_2 = ".tumblr.com/posts/photo?api_key=UxXCR2GAdx9idhSiONYzaYl8SIViskisNfj0NGyRmAPbqhXKnQ";
+var api_2 = ".tumblr.com/posts/photo?api_key=UxXCR2GAdx9idhSiONYzaYl8SIViskisNfj0NGyRmAPbqhXKnQ&offset=0&limit=50";
 
 var img;
 var respuesta;
 var time = 10;
-var postsIndex = -1;   // para el loop de posts
-var photosIndex = 0;  // para el loop de photos en el post
+var postsIndex = -1; // para el loop de posts
+var photosIndex = 0; // para el loop de photos en el post
 
 var postsPhotoArray = [];
 var photosInPostArray = [];
 var photosInPost = 0;
-
+var blogInput, timeInput, postButton, imgButton;
 var statusFotos = false;
 
 function setup() {
-  clear ();
-  var input = select('#question');
-  input.changed(ask);
-  var button = select('#submit');
+  clear();
+  blogInput = select('#blog');
+  timeInput = select('#time');
+  blogInput.changed(ask);
+  //timeInput.changed(timeFunction);   // not yet created
   img = document.getElementById("foto");
   document.addEventListener("mousedown", (e) => e.preventDefault(), false); // Esto desabilita el doble click del mouse
 }
@@ -34,12 +35,12 @@ function gotData(tumblr) {
   // Loop through every post and filter by type (photo)
   if (postsPhotoArray.length == 0) {
     for (var k = 0; k < tumblr.response.posts.length; k++) {
-      photosInPost = -1;  // convertir a cero el número de photos en el post
+      photosInPost = -1; // convertir a cero el número de photos en el post
       if (tumblr.response.posts[k].type == 'photo') {
         postsPhotoArray.push(k);
       }
     }
-    for (var i=0; i<postsPhotoArray.length; i++) {
+    for (var i = 0; i < postsPhotoArray.length; i++) {
       photosInPost = 0;
       for (var j = 0; j < tumblr.response.posts[postsPhotoArray[i]].photos.length; j++) {
         photosInPost++;
@@ -48,36 +49,62 @@ function gotData(tumblr) {
     }
 
     print('postsPhotoArray: ' + postsPhotoArray);
-    print('photosInPostArray: ' + photosInPostArray);  // Ya tenemos el número de fotos por post
+    print('photosInPostArray: ' + photosInPostArray); // Ya tenemos el número de fotos por post
   }
 
   for (var i = 0; i < postsPhotoArray.length; i++) {
-    for (var j = 0; j < tumblr.response.posts[postsPhotoArray[i]].photos.length; j++){
+    for (var j = 0; j < tumblr.response.posts[postsPhotoArray[i]].photos.length; j++) {
       img.src = (tumblr.response.posts[postsPhotoArray[postsIndex]].photos[photosIndex].original_size.url);
     }
   }
   img.style.visibility = "visible";
 }
 
-function mousePressed () {
-  if (statusFotos) {   // Si hay más de una foto:
-    if (photosIndex < photosInPostArray[postsIndex]-1){
-      photosIndex++;
-    } else {
-      photosIndex = 0;
-      postsIndex++
-    }
-
-  } else {          // Si solo hay una foto:
-    if (postsIndex > postsPhotoArray.length-2) {
-      postsIndex = 0;  // -1 para que al primer click empezemos en 0
-    } else {
-      postsIndex++;
-    }
-
+function mousePressed() {
+  var aumenta = true;
+  if ((mouseX > windowWidth / 2) && (mouseX < windowWidth)) { //2da mitad - aumenta
+    aumenta = true;
+  } else {
+    aumenta = false;
   }
 
-  
+  if (statusFotos) { // Si hay más de una foto:
+    if (photosIndex < photosInPostArray[postsIndex] - 1) {
+      if (aumenta == true) {
+        photosIndex++;
+      } else {
+        if (photosIndex == 0) {
+          postsIndex--;
+          photosIndex = 0;
+        } else {
+          photosIndex--;
+        }
+
+      }
+
+    } else {                             // Aquí voy
+      photosIndex = 0;
+      if (aumenta == true) {
+        postsIndex++;
+      } else {
+        postsIndex--;
+      }
+
+    }
+
+  } else { // Si solo hay una foto:
+    if (postsIndex > postsPhotoArray.length - 2) { // si el postIndex es mayor a los post de foto que existen
+      postsIndex = 0;
+    } else if (postsIndex < 0) { // si el postIndex es menor que cero
+      postsIndex = postsPhotoArray[-1];
+    } else {
+      if (aumenta == true) {
+        postsIndex++;
+      } else {
+        postsIndex--;
+      }
+    }
+  }
   if (photosInPostArray[postsIndex] > 1) {
     print('Aquí hay más de una foto');
     statusFotos = true;
@@ -85,8 +112,16 @@ function mousePressed () {
     statusFotos = false;
   }
   ask();
-  print ('PostsIndex: ' + postsIndex);
-  print ('PhotosIndex: '+ photosIndex);
 
+  print('PostsIndex: ' + postsIndex);
+  print('PhotosIndex: ' + photosIndex);
+}
 
+function randomImg() {
+  randomPostIndex = floor(random(postsPhotoArray.length));
+  if (photosInPostArray[randomPostIndex] > 1) {
+    randomPhotoIndex = floor(random(photosInPostArray[randomPostIndex]));
+  } else {
+    randomPhotoIndex = 0;
+  }
 }
