@@ -15,6 +15,8 @@ var photosInPost = 0;
 var blogInput, timeInput, postButton, imgButton;
 var statusFotos = false;
 
+var randomButton = false;
+
 function setup() {
   clear();
   blogInput = select('#blog');
@@ -61,55 +63,58 @@ function gotData(tumblr) {
 }
 
 function mousePressed() {
-  var aumenta = true;
-  if ((mouseX > windowWidth / 2) && (mouseX < windowWidth)) { //2da mitad - aumenta
-    aumenta = true;
+
+  if (randomButton) { // Mover en setup el status del botón
+    randomImg();
   } else {
-    aumenta = false;
-  }
-
-  if (statusFotos) { // Si hay más de una foto:
-    if (photosIndex < photosInPostArray[postsIndex] - 1) {
-      if (aumenta == true) {
-        photosIndex++;
-      } else {
-        if (photosIndex == 0) {
-          postsIndex--;
-          photosIndex = 0;
-        } else {
-          photosIndex--;
-        }
-
-      }
-
-    } else {                             // Aquí voy
-      photosIndex = 0;
-      if (aumenta == true) {
-        postsIndex++;
-      } else {
-        postsIndex--;
-      }
-
-    }
-
-  } else { // Si solo hay una foto:
-    if (postsIndex > postsPhotoArray.length - 2) { // si el postIndex es mayor a los post de foto que existen
-      postsIndex = 0;
-    } else if (postsIndex < 0) { // si el postIndex es menor que cero
-      postsIndex = postsPhotoArray[-1];
+    var aumenta = true;
+    if ((mouseX > windowWidth / 2) && (mouseX < windowWidth)) { //2da mitad - aumenta
+      aumenta = true;
     } else {
-      if (aumenta == true) {
-        postsIndex++;
+      aumenta = false;
+    }
+
+    if (statusFotos) { // Si hay más de una foto:
+      if (photosIndex < photosInPostArray[postsIndex] - 1) {
+        if (aumenta == true) {
+          photosIndex++;
+        } else {
+          if (photosIndex == 0) {
+            postsIndex--;
+            photosIndex = 0;
+          } else {
+            photosIndex--;
+          }
+        }
+      } else { // Aquí voy
+        photosIndex = 0;
+        if (aumenta == true) {
+          postsIndex++;
+        } else {
+          postsIndex--;
+        }
+      }
+    } else { // Si solo hay una foto:
+      if (postsIndex > postsPhotoArray.length - 2) { // si el postIndex es mayor a los post de foto que existen
+        postsIndex = 0;
       } else {
-        postsIndex--;
+        if (aumenta == true) {
+          postsIndex++;
+        } else {
+          if (postsIndex == 0) {
+            postsIndex = postsPhotoArray.length - 2;
+          } else {
+            postsIndex--;
+          }
+        }
       }
     }
-  }
-  if (photosInPostArray[postsIndex] > 1) {
-    print('Aquí hay más de una foto');
-    statusFotos = true;
-  } else {
-    statusFotos = false;
+    if (photosInPostArray[postsIndex] > 1) {
+      print('Aquí hay más de una foto');
+      statusFotos = true;
+    } else {
+      statusFotos = false;
+    }
   }
   ask();
 
@@ -117,11 +122,14 @@ function mousePressed() {
   print('PhotosIndex: ' + photosIndex);
 }
 
+// Usar el botón de back
+// Checar que sí salgan todas las fotos
+// Que en el random no se repitan las fotos
 function randomImg() {
-  randomPostIndex = floor(random(postsPhotoArray.length));
-  if (photosInPostArray[randomPostIndex] > 1) {
-    randomPhotoIndex = floor(random(photosInPostArray[randomPostIndex]));
+  postsIndex = floor(random(postsPhotoArray.length));
+  if (photosInPostArray[postsIndex] > 1) {
+    photosIndex = floor(random(photosInPostArray[postsIndex]));
   } else {
-    randomPhotoIndex = 0;
+    photosIndex = 0;
   }
 }
