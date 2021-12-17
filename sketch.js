@@ -15,7 +15,10 @@ var photosInPost = 0;
 var blogInput, timeInput, postButton, imgButton;
 var statusFotos = false;
 
-var randomButton = false;
+var randomButton = true;
+let lastRandom = 0;
+var lastRandomArray = [];
+var lastRandomIndex = 0;
 
 function setup() {
   clear();
@@ -63,17 +66,22 @@ function gotData(tumblr) {
 }
 
 function mousePressed() {
-
-  if (randomButton) { // Mover en setup el status del botón
-    randomImg();
-  } else {
-    var aumenta = true;
+  var aumenta = true;
     if ((mouseX > windowWidth / 2) && (mouseX < windowWidth)) { //2da mitad - aumenta
       aumenta = true;
     } else {
       aumenta = false;
     }
 
+  if (randomButton) { // Mover en setup el status del botón
+    if (aumenta == true) {
+      randomImg();
+    } else {
+      lastRandomIndex--;
+      postsIndex = lastRandomArray[lastRandomIndex];
+    }
+
+  } else {
     if (statusFotos) { // Si hay más de una foto:
       if (photosIndex < photosInPostArray[postsIndex] - 1) {
         if (aumenta == true) {
@@ -122,14 +130,22 @@ function mousePressed() {
   print('PhotosIndex: ' + photosIndex);
 }
 
-// Usar el botón de back
-// Checar que sí salgan todas las fotos
-// Que en el random no se repitan las fotos
+// Back button
+
 function randomImg() {
-  postsIndex = floor(random(postsPhotoArray.length));
-  if (photosInPostArray[postsIndex] > 1) {
-    photosIndex = floor(random(photosInPostArray[postsIndex]));
-  } else {
-    photosIndex = 0;
-  }
+  lastRandom = postsIndex;
+    postsIndex = floor(random(postsPhotoArray.length));
+    if (postsIndex == lastRandom) {
+      postsIndex = floor(random(postsPhotoArray.length));
+    } else {
+      append(lastRandomArray, lastRandom);
+      lastRandomIndex++;
+      if (photosInPostArray[postsIndex] > 0) {
+        photosIndex = floor(random(photosInPostArray[postsIndex]));
+      } else {
+        photosIndex = 0;
+      }
+    }
+    print("Last Random = " +lastRandom);
+    print("lastRandomArray: " +lastRandomArray);
 }
