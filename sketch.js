@@ -7,7 +7,7 @@ var api_2 = ".tumblr.com/posts/photo?api_key=UxXCR2GAdx9idhSiONYzaYl8SIViskisNfj
 
 var img;
 var respuesta;
-var time = 10000;
+var time = 5; //secs
 var postsIndex = 0; // para el loop de posts
 var photosIndex = 0; // para el loop de photos en el post
 
@@ -16,6 +16,7 @@ var photosInPostArray = [];
 var totalPhotos = 0;
 var totalPhotosRemaining;
 var noMorePhotosLeft = false;
+var stopTimer = false;
 var photosInPost = 0;
 var blogInput, timeInput, postButton, imgButton;
 var statusFotos = false;
@@ -25,17 +26,51 @@ let lastRandom = 0;
 var lastRandomArray = [];
 var lastRandomIndex = 0;
 
+let slider;
+
+
+
 function setup() {
   clear();
-  blogInput = select('#blog');
-  timeInput = 10;
-  timeInput = select('#time');
-  blogInput.changed(ask);
-  timeInput.changed(timeFunction);
-  img = document.getElementById("foto");
-  document.addEventListener("mousedown", (e) => e.preventDefault(), false); // Esto desabilita el doble click del mouse
 
-  setInterval(timeFunction, time);
+  blogInput = select('#blog');
+  blogInput.changed(changeBlog);
+
+  timeInput = select('#time');
+  timeInput.changed(changeTime);
+
+  img = document.getElementById("foto");
+  //document.addEventListener("mousedown", (e) => e.preventDefault(), false); // Esto desabilita el doble click del mouse
+  //makeTimer(time);
+  //setInterval(timeFunction, time * 1000); // Necesitamos que time se actualice aquí
+}
+
+function makeTimer() {
+  var wait = timeInput.value();
+  setInterval(timeFunction, wait * 1000); // eliminar esto y hacer un timer
+}
+
+function changeBlog() {
+  blog = blogInput.value();
+  api_1 = "https://api.tumblr.com/v2/blog/";
+  randomImg();
+  ask();
+}
+
+function changeTime() {
+  time = timeInput.value();
+  makeTimer(time);
+}
+
+function timeFunction() {
+  if (stopTimer == false) {
+    print("--- TIMER ---");
+    print("Timer = " + time);
+    randomImg();
+    ask();
+  } else {
+    print('Timer stopped.');
+  }
 }
 
 function newData() {
@@ -58,15 +93,7 @@ function ask() {
   var url = api_1 + blog + api_2;
   loadJSON(url, gotData);
   print('Offset: ' + offset);
-}
-
-function timeFunction() {
-  if (noMorePhotosLeft == false) {
-    print("- TIMER -");
-    randomImg();
-    ask();
-  }
-
+  print('Photos remaining: ' + totalPhotosRemaining);
 }
 
 function gotData(tumblr) {
@@ -104,7 +131,7 @@ function gotData(tumblr) {
   noMorePhotosLeft = false;
 }
 
-function mousePressed() {
+/* function mousePressed() {
   var aumenta = true;
   if ((mouseX > windowWidth / 2) && (mouseX < windowWidth)) { //2da mitad - aumenta
     aumenta = true;
@@ -168,14 +195,23 @@ function mousePressed() {
 
   // print('PostsIndex: ' + postsIndex);
   // print('PhotosIndex: ' + photosIndex);
-}
+} */
 
 // Back button
+/* function keyPressed() {
+  randomImg();
+  ask();
+} */
+
+/* function mousePressed() {
+  stopTimer = !stopTimer; // toggle a boolean
+  print('stopTimer is ' + stopTimer);
+} */
 
 function randomImg() {
   if (noMorePhotosLeft == false) {
     postsIndex = floor(random(postsPhotoArray.length));
-    print("PostsIndex = " + postsIndex);
+    //print("PostsIndex = " + postsIndex);
 
     if (totalPhotosRemaining <= 0) {
       print('There are no photos left!!!!!!!');
@@ -188,17 +224,17 @@ function randomImg() {
     if (lastRandomArray.includes(postsIndex)) {
 
       if (photosInPostArray[postsIndex] == 1) {
-        print("Repeat!!!");
+        //print("Repeat!!!");
         randomImg();
       } else { // if hay más de una foto
-        print('✨ More than one foto! Photos in post: ' + photosInPostArray[postsIndex]);
+        //print('✨ More than one foto! Photos in post: ' + photosInPostArray[postsIndex]);
         photosIndex = floor(random(1, photosInPostArray[postsIndex]));
-        print('-- Photos index: ' + photosIndex);
+        //print('-- Photos index: ' + photosIndex);
         photosInPostArray[postsIndex]--;
 
         totalPhotosRemaining--;
-        print("lastRandomArray: " + lastRandomArray);
-        print('Photos remaining: ' + totalPhotosRemaining);
+        //print("lastRandomArray: " + lastRandomArray);
+        //print('Photos remaining: ' + totalPhotosRemaining);
       }
 
     } else if (lastRandomArray.includes(postsIndex) == false) {
@@ -207,8 +243,8 @@ function randomImg() {
       photosIndex = 0;
 
       totalPhotosRemaining--;
-      print("lastRandomArray: " + lastRandomArray);
-      print('Photos remaining: ' + totalPhotosRemaining);
+      //print("lastRandomArray: " + lastRandomArray);
+      //print('Photos remaining: ' + totalPhotosRemaining);
     }
 
   }
