@@ -26,49 +26,64 @@ let lastRandom = 0;
 var lastRandomArray = [];
 var lastRandomIndex = 0;
 
-var timeImg = 10; //secs the img will be on display
+var timeImg = 15; //secs the img will be on display
 let lastTimeImg = 0;
-let timeSettings = 10;  // secs Setting will be on display
+let timeSettings = 10; // secs Setting will be on display
 let lastTimeSettings = 0;
+
+let start = false;
 
 
 function setup() {
   clear();
   ripTumbview = createP('RIP Tumbview - Play a slideshow for a tumblr blog.')
-  ripTumbview.position(20,20);
+  ripTumbview.position(20, 20);
   blogInput = createInput('Tumblr name');
-  blogInput.position(20,65);
+  blogInput.position(20, 65);
   blogInput.changed(changeBlog);
 
   timeInput = createInput('Seconds');
-  timeInput.position(175,65);
+  timeInput.position(175, 65);
   timeInput.changed(changeTime);
 
   img = document.getElementById("foto");
 
-  playButton = createButton('Go') //⏸
-  playButton.position(360,65);
-  playButton.mousePressed(start);
+  playButton = createButton('▶️') //⏸
+  playButton.position(360, 65);
+  playButton.mousePressed(startFun);
 
   //makeTimer(time);
   //setInterval(timeFunction, time * 1000); // Necesitamos que time se actualice aquí
 }
 
+function startFun() {
+  ask();
+  start = true;
+}
+
 function draw() {
-  if (millis()-lastTimeSettings > timeSettings * 1000){
-    ripTumbview.style('visibility', 'hidden');
-    blogInput.style('visibility', 'hidden');
-    timeInput.style('visibility', 'hidden');
-    playButton.style('visibility', 'hidden');
-    noCursor();
+  if (start == true) {
+
+    if (millis() - lastTimeSettings > timeSettings * 1000) { // displayed info on screen
+      ripTumbview.style('visibility', 'hidden');
+      blogInput.style('visibility', 'hidden');
+      timeInput.style('visibility', 'hidden');
+      playButton.style('visibility', 'hidden');
+      noCursor();
+    }
+    if (millis() - lastTimeImg > timeImg * 1000) { // timer between imgs
+      ask();
+    }
+    //playButton.mousePressed(togglePlaying);
   }
+
 }
 
 function mouseMoved() {
   displayVisible();
 }
 
-function displayVisible(){
+function displayVisible() {
   ripTumbview.style('visibility', 'visible');
   blogInput.style('visibility', 'visible');
   timeInput.style('visibility', 'visible');
@@ -78,33 +93,27 @@ function displayVisible(){
   lastTimeSettings = millis();
 }
 
-function start() {
+/* function start() {
   ask();
-  playButton.html('⏸');
   playButton.mousePressed(togglePlaying);
-}
+} */
 
-function makeTimer() {
-  var wait = timeInput.value();
-  setInterval(timeFunction, wait * 1000); // eliminar esto y hacer un timer
-}
 
 function changeBlog() {
   blog = blogInput.value();
   api_1 = "https://api.tumblr.com/v2/blog/";
-  ask();
+  //ask();
 }
 
 function changeTime() {
-  time = timeInput.value();
-  makeTimer(time);
+  timeImg = timeInput.value();
 }
 
 function timeFunction() {
   if (stopTimer == false) {
     print("--- TIMER ---");
     print("Timer = " + time);
-    ask();
+    //ask();
   }
 }
 
@@ -117,12 +126,13 @@ function togglePlaying() {
     stopTimer = false;
     print('Timer start.');
     playButton.html('⏸');
+    ask();
   }
 }
 
 function keyPressed() {
   displayVisible();
-  if (keyCode === 32) {
+  if (keyCode === 32) { // spacebar
     ask();
   }
 }
@@ -134,6 +144,7 @@ function ask() {
   loadJSON(url, gotData);
   print('Offset: ' + offset);
   print('Photos remaining: ' + totalPhotosRemaining);
+  lastTimeImg = millis();
 }
 
 function randomImg() {
