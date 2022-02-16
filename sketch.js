@@ -18,7 +18,7 @@ var totalPhotosRemaining;
 var noMorePhotosLeft = false;
 var stopTimer = true;
 var photosInPost = 0;
-var blogInput, timeInput, postButton, imgButton;
+var blogInput, timeInput, postButton, imgButton, tumblrLink, imgLink;
 var statusFotos = false;
 
 var randomButton = true;
@@ -26,10 +26,13 @@ let lastRandom = 0;
 var lastRandomArray = [];
 var lastRandomIndex = 0;
 
-var timeImg = 15; //secs the img will be on display
+var timeImg = 8; //secs the img will be on display
 let lastTimeImg = 0;
 let timeSettings = 10; // secs Setting will be on display
 let lastTimeSettings = 0;
+
+let playVisibility = false;
+let goVisibility = true;
 
 let start = false;
 
@@ -43,14 +46,30 @@ function setup() {
   blogInput.changed(changeBlog);
 
   timeInput = createInput('Seconds');
-  timeInput.position(175, 65);
+  timeInput.position(200, 65);
   timeInput.changed(changeTime);
 
   img = document.getElementById("foto");
 
+  goButton = createButton('Go');
+  goButton.position(385, 65);
+  goButton.mousePressed(startFun);
+
   playButton = createButton('▶️') //⏸
-  playButton.position(360, 65);
-  playButton.mousePressed(startFun);
+  playButton.style('visibility', 'hidden');
+  playButton.position(427, 65);
+  playButton.mousePressed(togglePlaying);
+
+  tumblrLink = createButton('🔗');
+  tumblrLink.style('visibility', 'hidden');
+  tumblrLink.position(469, 65);
+  tumblrLink.mousePressed(tumblrImg);
+
+  imgLink = createButton('🖼');
+  imgLink.style('visibility', 'hidden');
+  imgLink.position(505, 65);
+  imgLink.mousePressed(webImg);
+
 
   //makeTimer(time);
   //setInterval(timeFunction, time * 1000); // Necesitamos que time se actualice aquí
@@ -58,7 +77,10 @@ function setup() {
 
 function startFun() {
   ask();
+  togglePlaying();
   start = true;
+  playVisibility = true;
+  goVisibility = false;
 }
 
 function draw() {
@@ -69,14 +91,28 @@ function draw() {
       blogInput.style('visibility', 'hidden');
       timeInput.style('visibility', 'hidden');
       playButton.style('visibility', 'hidden');
+      goButton.style('visibility', 'hidden');
+      tumblrLink.style('visibility', 'hidden');
+      imgLink.style('visibility', 'hidden');
       noCursor();
     }
     if (millis() - lastTimeImg > timeImg * 1000) { // timer between imgs
       ask();
     }
     //playButton.mousePressed(togglePlaying);
+    if (stopTimer == true) {
+      lastTimeImg = millis();
+    }
   }
 
+}
+
+function tumblrImg() {
+  window.open(img.tumblr_link, 'blank');
+}
+
+function webImg() {
+  window.open(img.img_link);
 }
 
 function mouseMoved() {
@@ -87,8 +123,21 @@ function displayVisible() {
   ripTumbview.style('visibility', 'visible');
   blogInput.style('visibility', 'visible');
   timeInput.style('visibility', 'visible');
-  playButton.style('visibility', 'visible');
-  cursor(ARROW);
+  if (playVisibility == true) {
+    playButton.style('visibility', 'visible');
+    tumblrLink.style('visibility', 'visible');
+    imgLink.style('visibility', 'visible');
+  } else {
+    playButton.style('visibility', 'hidden');
+    tumblrLink.style('visibility', 'hidden');
+    imgLink.style('visibility', 'hidden');
+  }
+
+  if (goVisibility == true) {
+    goButton.style('visibility', 'visible');
+  } else {
+    goButton.style('visibility', 'hidden');
+  }
 
   lastTimeSettings = millis();
 }
@@ -100,8 +149,11 @@ function displayVisible() {
 
 
 function changeBlog() {
+  newData();
   blog = blogInput.value();
   api_1 = "https://api.tumblr.com/v2/blog/";
+  goVisibility = true;
+
   //ask();
 }
 
@@ -114,6 +166,8 @@ function timeFunction() {
     print("--- TIMER ---");
     print("Timer = " + time);
     //ask();
+  } else {
+    //lastTimeSettings = millis();   // Apagar el tiempo!!!
   }
 }
 
@@ -140,9 +194,12 @@ function keyPressed() {
 function ask() {
   randomImg();
 
+  api_1 = "https://api.tumblr.com/v2/blog/";
   var url = api_1 + blog + api_2;
   loadJSON(url, gotData);
-  print('Offset: ' + offset);
+
+
+  print('Time: ' + timeImg);
   print('Photos remaining: ' + totalPhotosRemaining);
   lastTimeImg = millis();
 }
@@ -166,9 +223,9 @@ function randomImg() {
         //print("Repeat!!!");
         randomImg();
       } else { // if hay más de una foto
-        //print('✨ More than one foto! Photos in post: ' + photosInPostArray[postsIndex]);
+        print('✨ More than one foto! Photos in post: ' + photosInPostArray[postsIndex]);
         photosIndex = floor(random(1, photosInPostArray[postsIndex]));
-        //print('-- Photos index: ' + photosIndex);
+        print('-- Photos index: ' + photosIndex);
         photosInPostArray[postsIndex]--;
 
         totalPhotosRemaining--;
@@ -210,6 +267,7 @@ function gotData(tumblr) {
       photosInPostArray.push(photosInPost);
     }
     print('Blogname= ' + blog.toUpperCase());
+    print('Offset: ' + offset);
     print('Total photos: ' + totalPhotos);
     totalPhotosRemaining = totalPhotos - 1;
     print('*** PostsPhotoArray: ' + postsPhotoArray);
@@ -220,6 +278,8 @@ function gotData(tumblr) {
   for (var i = 0; i < postsPhotoArray.length; i++) {
     for (var j = 0; j < tumblr.response.posts[postsPhotoArray[i]].photos.length; j++) {
       img.src = (tumblr.response.posts[postsPhotoArray[postsIndex]].photos[photosIndex].original_size.url);
+      img.tumblr_link = (tumblr.response.posts[postsPhotoArray[postsIndex]].post_url);
+      img.img_link = (tumblr.response.posts[postsPhotoArray[postsIndex]].photos[photosIndex].original_size.url);
     }
   }
   img.style.visibility = "visible";
