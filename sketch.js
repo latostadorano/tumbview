@@ -185,10 +185,14 @@ function togglePlaying() {
 }
 
 function keyPressed() {
-  displayVisible();
+  //displayVisible();
   if (keyCode === 32) { // spacebar
     ask();
   }
+}
+
+function mousePressed() {
+  ask();
 }
 
 function ask() {
